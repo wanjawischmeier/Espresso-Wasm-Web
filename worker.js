@@ -8,20 +8,22 @@ import { init, WASI } from '@wasmer/wasi';
 const module_cache = {};
 let wsmInitialized = false;
 
-addEventListener('message', (event) => {
-  // Expect message format: { input, args, wasmPath }
-  const { input, args, wasmPath } = event.data || {}
-  executeEspresso(input ?? '', args ?? [], wasmPath)
-    .then((result) => postMessage(result))
-    .catch((err) => postMessage({ exitCode: 1, stdout: '', stderr: String(err) }))
-});
+if (typeof addEventListener !== 'undefined') {
+  addEventListener('message', (event) => {
+    // Expect message format: { input, args, wasmPath }
+    const { input, args, wasmPath } = event.data || {}
+    executeEspresso(input ?? '', args ?? [], wasmPath)
+      .then((result) => postMessage(result))
+      .catch((err) => postMessage({ exitCode: 1, stdout: '', stderr: String(err) }))
+  })
+}
 
 /**
  * @param {string} input
  * @param {string[]} args
  * @return {Promise<{exitCode: number, stdout: string, stderr: string}>}
  */
-async function executeEspresso(input, args) {
+async function executeEspresso(input, args, wasmPath) {
   if (!wsmInitialized) {
     await init()
     wsmInitialized = true
@@ -72,3 +74,5 @@ async function instantiateModule(wasi, moduleName) {
 
   await wasi.instantiate(instance, {});
 }
+
+export { executeEspresso, instantiateModule }
