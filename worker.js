@@ -8,9 +8,9 @@ import { init, WASI } from '@wasmer/wasi';
 const module_cache = {};
 let wsmInitialized = false;
 
+// Handle messages when running as a Web Worker
 if (typeof addEventListener !== 'undefined') {
   addEventListener('message', (event) => {
-    // Expect message format: { input, args, wasmPath }
     const { input, args, wasmPath } = event.data || {}
     executeEspresso(input ?? '', args ?? [], wasmPath)
       .then((result) => postMessage(result))
